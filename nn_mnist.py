@@ -54,8 +54,8 @@ y = tf.nn.softmax(tf.matmul(h, W2) + b2)
 loss = tf.reduce_sum(tf.square(y_ - y))
 #cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
 
-#train = tf.train.RMSPropOptimizer(0.001).minimize(loss)
-train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+train = tf.train.RMSPropOptimizer(0.001).minimize(loss)
+#train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 #train = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
 #Inicio de la sesion de TensorFlow
@@ -72,18 +72,22 @@ print "---------------------"
 
 batch_size = 100
 plotError = []
+errorA = 15000
+errorB = 15000
+epoch = 0
 
-for epoch in xrange(100):
+while errorA <= errorB:
     for jj in xrange(len(train_x) / batch_size):
        batch_xs = train_x[jj * batch_size: jj * batch_size + batch_size]
        batch_ys = train_y[jj * batch_size: jj * batch_size + batch_size]
        sess.run(train, feed_dict={x: batch_xs, y_:batch_ys})
-
+    epoch += 1
     #Cambiamos la comparativa del error segun el optimizador elegido
-    error = sess.run(loss, feed_dict={x: valid_x, y_:valid_y})
-    #error = sess.run(cross_entropy, feed_dict={x: valid_x, y_: valid_y})
-    plotError.append(error)
-    print "Epoch #: ", epoch, " Error: ", error
+    errorB = errorA
+    errorA = sess.run(loss, feed_dict={x: valid_x, y_:valid_y})
+    #errorA = sess.run(cross_entropy, feed_dict={x: valid_x, y_: valid_y})
+    plotError.append(errorA)
+    print "Epoch #: ", epoch, " Error: ", errorA
     print "-------------------------------------------------------------"
 
 #Prueba con datos nuevos
@@ -102,7 +106,7 @@ print "-------------------------------------------------------------"
 
 plt.ylabel('Errores')
 plt.xlabel('Iteraciones')
-plt.title('Gradient Optimizer 0.01 LR Training')
+plt.title('RMS Prop Optimizer 0.001 Training')
 xLine = plt.plot(plotError)
 plt.legend(handle=[xLine])
 plt.show()
